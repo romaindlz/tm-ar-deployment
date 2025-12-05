@@ -1,7 +1,7 @@
 <!-- src/components/TopRightButtons.vue -->
 <template>
   <div class="top-right-buttons">
-    <button @click="$emit('attributs')">Attributs</button>
+    <button @click="$emit('attributs')">Infos</button>
     <button @click="$emit('feedback')">Feedback</button>
   </div>
 </template>

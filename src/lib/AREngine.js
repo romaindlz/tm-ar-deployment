@@ -2,20 +2,6 @@ import * as THREE from 'three';
 import * as LocAR from 'locar';
 import { COORDS } from '../constants/CoordsPts.js'
 
-/*
-//IG Group
-// Coordonnées des points fixes (calibration)
-const latPF1 = 46.22549;
-const lonPF1 = 7.36996;
-
-const latPF2 = 46.22556;
-const lonPF2 = 7.36965;
-
-// Coordonnées object
-const latObj = 46.22544;
-const lonObj = 7.36983;
-*/
-
 // "catalogue"
 const contenuAR = {
   sphere: {
