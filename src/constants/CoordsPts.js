@@ -8,7 +8,7 @@ export const COORDS = {
 
   latObj: 46.24695,
   lonObj: 7.41198,
-  modelURL: 'models/simple_cube0.glb'
+  modelURL: '/models/simple_cube0.glb'
 };
 
 /*

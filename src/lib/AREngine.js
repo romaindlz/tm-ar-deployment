@@ -81,7 +81,7 @@ async function createMesh(desc) {
               console.log('Response:', error.target.responseText?.slice(0, 200));
             }
 
-            debugLog('❌ Erreur lors du chargement du GLB (voir console)');
+            console.log('❌ Erreur lors du chargement du GLB (voir console)');
           }
         );
       });
