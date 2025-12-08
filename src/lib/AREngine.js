@@ -1,16 +1,13 @@
 import * as THREE from 'three';
 import * as LocAR from 'locar';
-import { COORDS } from '../constants/CoordsPts.js'
+import { COORDS } from '../constants/CoordsPts.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
 // "catalogue"
 const contenuAR = {
-  sphere: {
-    type: 'sphere',
-    lon: COORDS.lonObj,
-    lat: COORDS.latObj
-  },
-  box: {
-    type: 'box',
+  model : {
+    type: 'model',
+    url: COORDS.modelURL,
     lon: COORDS.lonObj,
     lat: COORDS.latObj
   },
@@ -30,6 +27,12 @@ let locar, scene, camera, renderer;
 let deviceOrientationControls;
 let elementsActuels = [];
 
+// Loader pour le GLB / GLTF
+const gltfLoader = new GLTFLoader();
+
+// hauteur approximative des yeux en mètres
+const EYE_HEIGHT = 1.6;
+
 /* ────────────────── FONCTIONS AR ────────────────── */
 function hideAllARElements() {
   elementsActuels.forEach(mesh => {
@@ -40,26 +43,48 @@ function hideAllARElements() {
 }
 
 // Creation du modèle représenté par AR
-function createMesh(desc) {
+async function createMesh(desc) {
   switch (desc.type) {
-    case 'box': {
-      const [sx, sy, sz] = [5, 5, 5];
-      const geom = new THREE.BoxGeometry(sx, sy, sz);
-      const mat = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.8
+
+    case 'model': {
+      if (!desc.url) {
+        console.warn('desc.url manquant pour un modèle glTF', desc);
+        return null;
+      }
+
+      return new Promise((resolve, reject) => {
+        gltfLoader.load(
+          desc.url,
+          gltf => {
+            const root = gltf.scene;
+
+            root.traverse(obj => {
+              if (!obj.isMesh) return;
+
+              obj.material = new THREE.MeshBasicMaterial({
+                color: 0x00557F,
+                transparent: true,
+                opacity: 0.6
+              });
+            });
+
+            resolve(root);
+          },
+          undefined,
+          error => {
+            console.error('Erreur lors du chargement du GLB :', error);
+
+            // Si c'est un event de FileLoader
+            if (error && error.target) {
+              console.log('Status:', error.target.status);
+              console.log('URL:', error.target.responseURL);
+              console.log('Response:', error.target.responseText?.slice(0, 200));
+            }
+
+            debugLog('❌ Erreur lors du chargement du GLB (voir console)');
+          }
+        );
       });
-
-      return new THREE.Mesh(geom, mat);
-    }  
-    
-    case 'sphere': {
-      const geometry = new THREE.SphereGeometry(8, 32, 32);
-      const material = new THREE.MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.5 });
-      const sphere = new THREE.Mesh(geometry, material);
-
-      return sphere;
     }
 
     case 'arrow': {
@@ -98,39 +123,43 @@ function createMesh(desc) {
 
       return group;
       }
+
+      default:
+        console.warn('Type de contenu AR inconnu :', desc.type);
+        return null;
+
     }
 }
 
 
 // Engine pour l'AR
-export function AREngine(input) {
+export async function AREngine(input) {
   if (!locar || !scene) {
     console.warn('LocAR ou scene non initialisés');
     return;
   }
 
-  // 1) Normaliser l'entrée : objet unique → tableau avec 1 élément
-  const elements = Array.isArray(input) ? input : [input];
-
   console.log('AREngine reçu =', input);
-  console.log('Normalisé en tableau =', elements);
 
   hideAllARElements();
 
-  // 3) Créer et ajouter les nouveaux éléments
-  elements.forEach(desc => {
+  const mesh = await createMesh(input);
 
-    const mesh = createMesh(desc);
+  if (!mesh) {console.warn('createMesh a renvoyé null pour', input);
+    return;
+  }
 
-    if (typeof desc.lon !== 'number' || typeof desc.lat !== 'number') {
-      console.warn('desc.lon / desc.lat invalides pour', desc);
-      return;
-    }
+  if (typeof input.lon !== 'number' || typeof input.lat !== 'number') {
+    console.warn('input.lon / input.lat invalides pour', input);
+    return;
+  }
 
-    locar.add(mesh, desc.lon, desc.lat);
+  locar.add(mesh, input.lon, input.lat);
 
-    elementsActuels.push(mesh);
-  });
+  // Rapprocher le modèle du sol (déduire la hauteur des yeux)
+  mesh.position.y -= EYE_HEIGHT;
+
+  elementsActuels = [mesh];
 
   console.log('elementsActuels après AREngine =', elementsActuels);
 }
@@ -222,13 +251,9 @@ export function initAREngine(canvas) {
         console.warn('Erreur lors du stopGps:', e)
       }
     },
-    async showSphere() {
+    async showModel() {
       await firstFixPromise
-      AREngine(contenuAR.sphere)
-    },
-    async showBox() {
-      await firstFixPromise
-      AREngine(contenuAR.box)
+      AREngine(contenuAR.model)
     },
     async showArrowPf1() {
       await firstFixPromise

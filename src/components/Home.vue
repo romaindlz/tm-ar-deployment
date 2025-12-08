@@ -47,8 +47,8 @@ export default {
     const ar = this.$refs.arView?.arInstance
 
     if (ar) {
-      console.log("Affichage automatique de la sphère sur Home")
-      ar.showSphere()   // Affiche la sphère
+      console.log("Affichage automatique du modèle sur Home")
+      ar.showModel()   // Affiche le modèle 3D gLB
     }
 
     const popupFlag = sessionStorage.getItem('welcomeShown')
