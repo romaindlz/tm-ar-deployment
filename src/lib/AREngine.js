@@ -88,8 +88,8 @@ async function createMesh(desc) {
     }
 
     case 'arrow': {
-      const height = 8;                    // hauteur totale (en "m")
-      const headHeight = height * 0.4;              // partie pointe
+      const height = 2;                    // hauteur totale (en "m")
+      const headHeight = 0.8;              // partie pointe
       const headRadius  = headHeight * 0.6; // largeur de la pointe
       const color = 0x0000ff;
       const opacity = 0.8;
@@ -102,6 +102,13 @@ async function createMesh(desc) {
         transparent: true,
         opacity
       });
+	  
+	  // Pointe (cône)
+      const headGeom = new THREE.ConeGeometry(headRadius, headHeight, 16);
+      const head = new THREE.Mesh(headGeom, mat);
+      head.position.y -= EYE_HEIGHT - (headHeight/ 2);
+
+      head.rotation.z = Math.PI;
 
       // Tige de la flèche (cylindre)
       const shaftHeight = height - headHeight;
@@ -110,16 +117,10 @@ async function createMesh(desc) {
       const shaftGeom = new THREE.CylinderGeometry(shaftRadius, shaftRadius, shaftHeight, 16);
       const shaft = new THREE.Mesh(shaftGeom, mat);
 
-      shaft.position.y = shaftHeight / 2;
-      group.add(shaft);
-
-      // Pointe (cône)
-      const headGeom = new THREE.ConeGeometry(headRadius, headHeight, 16);
-      const head = new THREE.Mesh(headGeom, mat);
-      head.position.y = shaftHeight + headHeight / 2;
+      shaft.position.y -= EYE_HEIGHT - headHeight - (shaftHeight/ 2);
+	  
+	    group.add(shaft);
       group.add(head);
-
-      group.rotation.z = Math.PI;
 
       return group;
       }

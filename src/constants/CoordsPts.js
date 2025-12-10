@@ -1,3 +1,4 @@
+/*
 //Uvrier
 export const COORDS = {
   latPF1: 46.24682,
@@ -10,16 +11,17 @@ export const COORDS = {
   lonObj: 7.41198,
   modelURL: '/models/simple_cube0.glb'
 };
-
-/*
-export const COORDS = {
-  latPF1: 46.22549,
-  lonPF1: 7.36996,
-
-  latPF2: 46.22556,
-  lonPF2: 7.36965,
-
-  latObj: 46.22544,
-  lonObj: 7.36983
-};
 */
+
+//IGGroup
+export const COORDS = {
+  latPF1: 46.22541,
+  lonPF1: 7.37016,
+
+  latPF2: 46.22551,
+  lonPF2: 7.37006,
+
+  latObj: 46.22575,
+  lonObj: 7.37054,
+  modelURL: 'public/models/simple_cube0.glb'
+};
