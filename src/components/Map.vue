@@ -14,11 +14,14 @@ import marker2x from "leaflet/dist/images/marker-icon-2x.png";
 import marker from "leaflet/dist/images/marker-icon.png";
 import shadow from "leaflet/dist/images/marker-shadow.png";
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: marker2x,
-  iconUrl: marker,
-  shadowUrl: shadow,
+const userIcon = new Icon({
+  iconUrl: markerIconPng,
+  iconRetinaUrl: markerIcon2xPng,
+  shadowUrl: markerShadowPng,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
 });
 
 const lat  = 46.22543;
@@ -53,7 +56,8 @@ export default {
           "© swisstopo (pixelkarte-grau)"
       }).addTo(this.map)
 
-      this.userMarker = L.marker(this.center).addTo(this.map);
+      //this.userMarker = L.marker(this.center).addTo(this.map);
+      this.userMarker = L.marker(this.center, { icon: userIcon }).addTo(this.map);
 
       this.startUserTracking();
 
