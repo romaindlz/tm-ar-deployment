@@ -1,3 +1,4 @@
+<!-- Map.vue -->
 <template>
   <div class="map-container">
     <div ref="mapElement" class="leaflet-map"></div>
@@ -8,6 +9,17 @@
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { getPosition } from '../lib/getPosition.js';
+
+import marker2x from "leaflet/dist/images/marker-icon-2x.png";
+import marker from "leaflet/dist/images/marker-icon.png";
+import shadow from "leaflet/dist/images/marker-shadow.png";
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: marker2x,
+  iconUrl: marker,
+  shadowUrl: shadow,
+});
 
 const lat  = 46.22543;
 const lon = 7.36980;
