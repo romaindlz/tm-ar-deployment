@@ -8,17 +8,18 @@
 <script>
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import {Icon} from 'leaflet'
 import { getPosition } from '../lib/getPosition.js';
 
-import marker2x from "leaflet/dist/images/marker-icon-2x.png";
-import marker from "leaflet/dist/images/marker-icon.png";
-import shadow from "leaflet/dist/images/marker-shadow.png";
+import markerIconPng from "leaflet/dist/images/marker-icon.png";
+import markerIcon2xPng from "leaflet/dist/images/marker-icon-2x.png";
+import markerShadowPng from "leaflet/dist/images/marker-shadow.png";
 
 const userIcon = new Icon({
   iconUrl: markerIconPng,
   iconRetinaUrl: markerIcon2xPng,
   shadowUrl: markerShadowPng,
-  iconSize: [25, 41],
+  iconSize: [20, 30],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
