@@ -23,5 +23,5 @@ export const COORDS = {
 
   latObj: 46.22575,
   lonObj: 7.37054,
-  modelURL: 'public/models/simple_cube0.glb'
+  modelURL: 'models/simple_cube0.glb'
 };
