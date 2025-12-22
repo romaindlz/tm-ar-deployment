@@ -1,4 +1,4 @@
-import { appendLog, saveLogsToFile, clearLogs } from './logger.js';
+import { logCalibration } from "./logger.js";
 import { getPosition } from './getPosition.js';
 import { getHelmert2DParam, applyHelmert }  from './transformation.js';
 import { COORDS } from '../constants/CoordsPts.js'
@@ -11,21 +11,6 @@ const lonPF1 = COORDS.lonPF1;
 
 const latPF2 = COORDS.latPF2;
 const lonPF2 = COORDS.lonPF2;
-
-
-/*
-//IG Group
-// Coordonnées des points fixes (calibration)
-const latPF1 = 46.22549;
-const lonPF1 = 7.36996;
-
-const latPF2 = 46.22556;
-const lonPF2 = 7.36965;
-
-// Coordonnées object
-const latObj = 46.22544;
-const lonObj = 7.36983;
-*/
 
 function degToRad(deg) {
   return (deg * Math.PI) / 180;
@@ -113,7 +98,7 @@ async function calibrateGps(lonKnown, latKnown, { onStart, onEnd } = {}) {
 
         if (res?.ok && lat != null && lon != null && h != null) {
           samples.push({ lat: lat, lon: lon, h: h });
-          //appendLog(`lat: ${lat}, lon: ${lon}, h: ${h}`);
+          console.log(`lat: ${lat}, lon: ${lon}, h: ${h}`);
         }
       } catch (e) {
         // on ignore cet échantillon
@@ -136,7 +121,7 @@ async function calibrateGps(lonKnown, latKnown, { onStart, onEnd } = {}) {
     const hMean = mean(altitudesInliers);
     const hStd  = std(altitudesInliers);
 
-    //appendLog(`h mean (inliers): ${hMean} m, h std: ${hStd} m`);
+    console.log(`h mean (inliers): ${hMean} m, h std: ${hStd} m`);
 
     // Correction = connu - mesuré
     const dLatDeg = latKnown - latMean;
@@ -148,13 +133,13 @@ async function calibrateGps(lonKnown, latKnown, { onStart, onEnd } = {}) {
     const latStdDeg = std(latResiduals);
     const lonStdDeg = std(lonResiduals);
 
-    //appendLog(`lat std: ${latStdDeg}, lon std: ${lonStdDeg}`);
+    console.log(`lat std: ${latStdDeg}, lon std: ${lonStdDeg}`);
 
     // distance Haversine entre moyen mesuré et connu
     const dHaversine = haversineDistance(latKnown, lonKnown, latMean, lonMean)
 
-    //appendLog(`delta [m] : ${dHaversine}`);
-    appendLog(`Calibration: ${samples.length} échantillons (−${removed} outliers, thr=${zThreshold})`);
+    console.log(`delta [m] : ${dHaversine}`);
+    console.log(`Calibration: ${samples.length} échantillons (−${removed} outliers, thr=${zThreshold})`);
 
     return {
       avgDeltaDeg: { dLat: dLatDeg, dLon: dLonDeg },
@@ -206,7 +191,7 @@ let params   = null;
 
 export async function runCalibrationPoint(pointName, lonKnown, latKnown, options={}) {
 
-  const { onStart, onEnd } = options;
+  const { onStart, onEnd, sessionId = null } = options;
   
   console.log(`Calibration ${pointName} démarrée`);
   alert(`Calibration sur ${pointName} en cours… Restez immobile ~5 s.`);
@@ -234,7 +219,7 @@ export async function runCalibrationPoint(pointName, lonKnown, latKnown, options
     const degs   = `Δlat ${calibLat.toFixed(8)}°, Δlon ${calibLon.toFixed(8)}°`;
     const spread = `σ: lat ${res.stats.latResidualStdDeg.toExponential(2)}°, lon ${res.stats.lonResidualStdDeg.toExponential(2)}°  | utilisés: ${res.stats.samplesUsed}/${res.stats.samplesTotal}`;
 
-    appendLog?.(`✅ Calibration sur ${pointName} OK\n${degs}\n${meters}\n${spread}`);
+    console.log(`Calibration sur ${pointName} OK\n${degs}\n${meters}\n${spread}`);
     alert(`Calibration sur ${pointName} OK.\n${meters}`);
 
     //Permet d'activer, ou non, le fakeGPS
@@ -242,10 +227,24 @@ export async function runCalibrationPoint(pointName, lonKnown, latKnown, options
       markCalibrationDone();
     }
 
+    // --- Logger ---
+    try {
+      await logCalibration({
+        res,
+        pointName,
+        lonKnown,
+        latKnown,
+        sessionId,
+      });
+    } catch (e) {
+      console.warn("Logger calibration failed:", e);
+    }
+
+
     return res;
 
   } catch (e) {
-    appendLog?.(`❌ Calibration ${pointName} échouée: ${e?.message || e}`);
+    console.log(`Calibration ${pointName} échouée: ${e?.message || e}`);
     alert(`Calibration échouée: ${e?.message || e}`);
     throw e;
   }
@@ -262,8 +261,8 @@ export async function startLiveCorrectedFakeGps() {
     pf1_source_lon == null || pf1_source_lat == null ||
     pf2_source_lon == null || pf2_source_lat == null
   ) {
-    alert("⚠️ Impossible de démarrer la Fake GPS.\nVeuillez d'abord calibrer les points 1 et 2.");
-    appendLog?.("❌ Fake GPS bloquée : calibration PF1 et PF2 incomplète.");
+    alert("Impossible de démarrer la Fake GPS.\nVeuillez d'abord calibrer les points 1 et 2.");
+    console.log("Fake GPS bloquée : calibration PF1 et PF2 incomplète.");
     return;
   }
 
@@ -275,10 +274,10 @@ export async function startLiveCorrectedFakeGps() {
 
   try {
     params = getHelmert2DParam(source1, source2, target1, target2);
-    appendLog?.("🔧 Paramètres Helmert calculés avec succès.");
+    console.log("Paramètres Helmert calculés avec succès.");
   } catch (err) {
-    alert("⚠️ Erreur lors du calcul Helmert : " + (err.message || err));
-    appendLog?.("❌ Calcul Helmert échoué : " + (err.message || err));
+    alert("Erreur lors du calcul Helmert : " + (err.message || err));
+    console.log("Calcul Helmert échoué : " + (err.message || err));
     return;
   }
 
@@ -292,10 +291,12 @@ export async function startLiveCorrectedFakeGps() {
   // test initial (et injection immédiate)
   let res;
   try { res = await getPosition(); }
-  catch (e) { appendLog(`❌ getPosition exception: ${e?.message || e}`); return; }
+  catch (e) { console.log(`getPosition exception: ${e?.message || e}`);
+    return;
+  }
 
   if (!res?.ok || !res.coords) {
-    appendLog(`❌ getPosition a échoué: ${res?.error?.code || 'UNKNOWN'}`);
+    console.log(`getPosition a échoué: ${res?.error?.code || 'UNKNOWN'}`);
     return;
   }
 
@@ -310,9 +311,9 @@ export async function startLiveCorrectedFakeGps() {
     const first = applyHelmert(res.coords.latitude, res.coords.longitude, res.coords.altitude, params);
     console.log(first)
     window?.locar?.fakeGps?.(first.lon_transfo, first.lat_transfo);
-    appendLog(`🚀 Fake GPS LIVE démarrée (lon: ${first.lon_transfo.toFixed(6)}, lat: ${first.lat_transfo.toFixed(6)})`);
+    console.log(`Fake GPS LIVE démarrée (lon: ${first.lon_transfo.toFixed(6)}, lat: ${first.lat_transfo.toFixed(6)})`);
   } catch (e) {
-    appendLog(`⚠️ Impossible d'initialiser la fake GPS : ${e.message || e}`);
+    console.log(`Impossible d'initialiser la fake GPS : ${e.message || e}`);
   }
 
   // boucle LIVE
@@ -326,9 +327,9 @@ export async function startLiveCorrectedFakeGps() {
       const corrected = applyHelmert(r.coords.latitude, r.coords.longitude, r.coords.altitude, params);
       window?.locar?.fakeGps?.(corrected.lon_transfo, corrected.lat_transfo);
 
-      appendLog(`📍 Fake GPS LIVE → lon: ${corrected.lon_transfo.toFixed(6)}, lat: ${corrected.lat_transfo.toFixed(6)}`);
+      console.log(`Fake GPS LIVE → lon: ${corrected.lon_transfo.toFixed(6)}, lat: ${corrected.lat_transfo.toFixed(6)}`);
     } catch (err) {
-      appendLog(`⚠️ Erreur tick fake GPS: ${err?.message || err}`);
+      console.log(`Erreur tick fake GPS: ${err?.message || err}`);
     }
   }, FAKE_GPS_INTERVAL);
 }

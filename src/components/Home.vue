@@ -73,7 +73,10 @@ export default {
       this.isSidePanelOpen = !this.isSidePanelOpen
     },
     feedback() {
-      this.$router.push('/feedback')
+      window.open(
+    'https://docs.google.com/forms/d/e/1FAIpQLScTY4oCuQEOsQuCAlPTz_XexjU8eV87tU8lbJPWVpyNH1u_RQ/viewform?usp=dialog',
+    '_blank'
+  )
     },
     closeSidePanel() {
       this.isSidePanelOpen = false

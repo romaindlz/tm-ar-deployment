@@ -38,18 +38,21 @@
 
 
 <script>
-import ARView from './ARView.vue'
-import DebugConsole from './DebugConsole.vue'
-import { runCalibrationPoint } from '../lib/calib.js'
-import { COORDS } from '../constants/CoordsPts.js'
+import ARView from './ARView.vue';
+import DebugConsole from './DebugConsole.vue';
+import { runCalibrationPoint } from '../lib/calib.js';
+import { COORDS } from '../constants/CoordsPts.js';
+import { exportCalibrationHistory } from "../lib/logger.js";
 
 export default {
   name: 'Calibration',
   components: { ARView, DebugConsole },
 
   data() {
-    return { step: 1,
-      isMeasuring: false
+    return { 
+      step: 1,
+      isMeasuring: false,
+      sessionId: `session-${Date.now()}`
      }
   },
 
@@ -76,6 +79,8 @@ export default {
         await runCalibrationPoint('Point 1', COORDS.lonPF1, COORDS.latPF1, {
           onStart: () => { this.isMeasuring = true; },
           onEnd:   () => { this.isMeasuring = false; },
+
+          sessionId: this.sessionId
         });
 
         ar?.showArrowPf2();   // affiche PF2
@@ -88,6 +93,8 @@ export default {
         await runCalibrationPoint('Point 2', COORDS.lonPF2, COORDS.latPF2, {
           onStart: () => { this.isMeasuring = true; },
           onEnd:   () => { this.isMeasuring = false; },
+
+          sessionId: this.sessionId
         });
 
         this.step = 3;
@@ -95,6 +102,13 @@ export default {
       }
 
       if (this.step === 3) {
+        try {
+          await exportCalibrationHistory({ sessionId: this.sessionId });
+        } catch (e) {
+          console.warn("Export calibration failed:", e);
+          alert("Export JSON impossible sur ce navigateur.");
+        }
+
         this.$router.push('/');
       }
     }
