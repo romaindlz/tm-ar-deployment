@@ -24,14 +24,3 @@ export async function getPosition() {
       device,
     };
 }
-
-// bouton getPosition
-document.getElementById("Pos")?.addEventListener("click", () => {
-  getPosition()
-    .then(res => {
-      console.log('Geo Capacitor position obtenue', res);
-    })
-    .catch(e => {
-      console.error('Exception getPosition:', e);
-    });
-});

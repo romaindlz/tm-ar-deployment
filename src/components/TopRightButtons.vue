@@ -3,6 +3,7 @@
   <div class="top-right-buttons">
     <button @click="$emit('attributs')">Infos</button>
     <button @click="$emit('feedback')">Feedback</button>
+    <button @click="$emit('TheEnd')">Terminer</button>
   </div>
 </template>
 

@@ -13,6 +13,8 @@ export const COORDS = {
 };
 */
 
+import { getSessionId } from "../lib/sessionId";
+
 //IGGroup
 export const COORDS = {
   latPF1: 46.22541,

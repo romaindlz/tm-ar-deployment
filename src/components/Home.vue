@@ -6,6 +6,7 @@
     <TopRightButtons
       @attributs="attributs"
       @feedback="feedback"
+      @TheEnd="TheEnd"
     />
 
     <Map></Map>
@@ -24,6 +25,11 @@ import Map from './Map.vue'
 import SidePanel from './SidePanel.vue'
 import Popup from './Popup.vue'
 import { startLiveCorrectedFakeGps, calibrationReady } from '../lib/calib.js';
+import { endSession } from '../lib/endSession.js';
+import { logEvent } from "../lib/CRUD.js";
+import { startGpsTracking } from '../lib/gpsTracking.js';
+import { exportAndResetSession } from "../lib/logger.js";
+import { getSessionId } from "../lib/sessionId.js";
 
 
 export default {
@@ -39,7 +45,8 @@ export default {
   data() {
     return {
       isSidePanelOpen: false,
-      showPopup: false
+      showPopup: false,
+      sessionId: getSessionId()
     }
   },
 
@@ -70,6 +77,7 @@ export default {
   
   methods: {
     attributs() {
+      logEvent("button_click", { id: "side_panel" })
       this.isSidePanelOpen = !this.isSidePanelOpen
     },
     feedback() {
@@ -78,10 +86,21 @@ export default {
     '_blank'
   )
     },
+    async TheEnd(){
+      await endSession();
+      try {
+          await exportAndResetSession(this.sessionId);
+        } catch (e) {
+          console.warn("Export calibration failed:", e);
+          alert("Export JSON impossible sur ce navigateur.");
+        }
+    },
     closeSidePanel() {
       this.isSidePanelOpen = false
     },
     closePopup() {
+      logEvent("session_start");
+      startGpsTracking();
       this.showPopup = false
       sessionStorage.setItem('welcomeShown', '1')
       this.$router.push('/calibration')

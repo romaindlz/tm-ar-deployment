@@ -1,11 +1,10 @@
-// logger.js (web only, IndexedDB + export JSON snapshots) — version simplifiée
-
 const DB_NAME = "tmCalibrationDB";
 const DB_VERSION = 1;
 const STORE_NAME = "docs";
 const DOC_KEY = "calibration-history-v1";
 
-/** ---------- IndexedDB core ---------- **/
+/* ---------------- IndexedDB ---------------- */
+
 function openDb() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -48,90 +47,33 @@ async function writeDoc(doc) {
   });
 }
 
-/** ---------- Document structure ---------- **/
-export function ensureCalibrationDocument(doc) {
-  const out = (doc && typeof doc === "object") ? doc : {};
+async function deleteDoc() {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.delete(DOC_KEY);
+
+    req.onsuccess = () => resolve(true);
+    req.onerror = () => reject(req.error);
+    tx.oncomplete = () => db.close();
+  });
+}
+
+/* ---------------- Structure document ---------------- */
+
+function ensureDocument(doc) {
+  const out = doc && typeof doc === "object" ? doc : {};
   if (out.schemaVersion == null) out.schemaVersion = 1;
-  if (!Array.isArray(out.calibrations)) out.calibrations = [];
+  if (!Array.isArray(out.events)) out.events = [];
   return out;
 }
 
-function makeId(prefix = "cal") {
-  const ts = new Date().toISOString().replace(/[:.]/g, "-");
-  const rnd = Math.random().toString(16).slice(2, 8);
-  return `${prefix}-${ts}-${rnd}`;
+function makeId(prefix = "evt") {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`;
 }
 
-/** ---------- Mapping: ton res -> objet minimal ---------- **/
-export function buildResultsFromCalibrationResult(res) {
-  return {
-    avgDeltaDeg: {
-      dLat: res?.avgDeltaDeg?.dLat ?? null,
-      dLon: res?.avgDeltaDeg?.dLon ?? null,
-    },
-    dHaversine: res?.dHaversine ?? null,
-    avgAltitude: res?.avgAltitude ?? null,
-    stats: {
-      samplesTotal: res?.stats?.samplesTotal ?? null,
-      samplesUsed: res?.stats?.samplesUsed ?? null,
-      zThreshold: res?.stats?.zThreshold ?? null,
-
-      latMeasuredMean: res?.stats?.latMeasuredMean ?? null,
-      lonMeasuredMean: res?.stats?.lonMeasuredMean ?? null,
-
-      latResidualStdDeg: res?.stats?.latResidualStdDeg ?? null,
-      lonResidualStdDeg: res?.stats?.lonResidualStdDeg ?? null,
-
-      altitudesInliersCount: res?.stats?.altitudesInliersCount ?? null,
-      altitudeMean: res?.stats?.altitudeMean ?? null,
-      altitudeStd: res?.stats?.altitudeStd ?? null,
-    },
-    units: {
-      deltaLatLon: "degrees",
-      haversine: "meters",
-      altitude: "meters",
-    }
-  };
-}
-
-/**
- * Ajoute une calibration (entrée minimale).
- */
-export async function logCalibration({
-  res,
-  pointName,
-  lonKnown,
-  latKnown,
-  sessionId = null
-}) {
-  if (!res) throw new Error("logCalibration: 'res' est requis.");
-  if (!pointName) throw new Error("logCalibration: 'pointName' est requis.");
-
-  const doc = ensureCalibrationDocument(await readDoc());
-
-  const record = {
-    id: makeId("cal"),
-    createdAt: new Date().toISOString(),
-    sessionId,
-    pointName,
-    known: { lon: lonKnown, lat: latKnown },
-    results: buildResultsFromCalibrationResult(res),
-  };
-
-  doc.calibrations.push(record);
-  await writeDoc(doc);
-
-  return record;
-}
-
-export async function readCalibrationHistory() {
-  return ensureCalibrationDocument(await readDoc());
-}
-
-export async function getCalibrations() {
-  const doc = await readCalibrationHistory();
-  return doc.calibrations;
-}
+/* ---------------- Export helper ---------------- */
 
 function downloadJson(data, filename) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -144,16 +86,57 @@ function downloadJson(data, filename) {
   URL.revokeObjectURL(a.href);
 }
 
-/**
- * Export complet
- */
-export async function exportCalibrationHistory({ filenamePrefix = "calibration-history", sessionId = null } = {}) {
-  const doc = await readCalibrationHistory();
-  const ts = new Date().toISOString().slice(0, 19).replace(/[:]/g, "-");
-  const sid = sessionId ? `-${sessionId}` : "";
-  const filename = `${filenamePrefix}${sid}-${ts}.json`;
-  downloadJson(doc, filename);
-  return filename;
+
+export async function logCalibration(eventType, payload = {}, sessionId = null) {
+  if (!eventType) throw new Error("logCalibration: eventType requis.");
+
+  const doc = ensureDocument(await readDoc());
+  doc.events.push({
+    id: makeId(),
+    type: eventType,
+    createdAt: new Date().toISOString(),
+    sessionId,
+    payload,
+  });
+
+  await writeDoc(doc);
+}
+
+export async function readHistory() {
+  return ensureDocument(await readDoc());
 }
 
 
+export async function exportAndResetSession(
+  sessionId,
+  { filenamePrefix = "calibration-session", resetMode = "all" } = {}
+) {
+  if (!sessionId) throw new Error("exportAndResetSession: sessionId requis.");
+
+  const doc = await readHistory();
+  const sessionEvents = doc.events.filter(e => e.sessionId === sessionId);
+
+  const exported = {
+    schemaVersion: doc.schemaVersion,
+    sessionId,
+    exportedAt: new Date().toISOString(),
+    events: sessionEvents,
+  };
+
+  const ts = new Date().toISOString().slice(0, 19).replace(/[:]/g, "-");
+  const filename = `${filenamePrefix}-${sessionId}-${ts}.json`;
+  downloadJson(exported, filename);
+
+  // Reset juste après export
+  if (resetMode === "all") {
+    await deleteDoc();
+  } else {
+    const remaining = {
+      schemaVersion: doc.schemaVersion,
+      events: doc.events.filter(e => e.sessionId !== sessionId),
+    };
+    await writeDoc(remaining);
+  }
+
+  return filename;
+}

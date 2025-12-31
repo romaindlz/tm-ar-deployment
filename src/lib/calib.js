@@ -2,6 +2,8 @@ import { logCalibration } from "./logger.js";
 import { getPosition } from './getPosition.js';
 import { getHelmert2DParam, applyHelmert }  from './transformation.js';
 import { COORDS } from '../constants/CoordsPts.js'
+import { logEvent } from "./CRUD.js";
+import { getSessionId } from "./sessionId.js";
 
 /* ────────────────── Calibration GPS ────────────────── */
 //Uvrier
@@ -229,16 +231,25 @@ export async function runCalibrationPoint(pointName, lonKnown, latKnown, options
 
     // --- Logger ---
     try {
-      await logCalibration({
-        res,
-        pointName,
+      await logCalibration("Calibration_Point", {
+        point: pointName,
         lonKnown,
         latKnown,
-        sessionId,
-      });
+        avgDeltaDeg: res.avgDeltaDeg,
+        dHaversine: res.dHaversine,
+        stats: res.stats
+      }, sessionId);
     } catch (e) {
       console.warn("Logger calibration failed:", e);
     }
+
+    logEvent("calibration_done", {
+      pointName: pointName,
+      samplesUsed: res.stats.samplesUsed,
+      meanDelta: res.dHaversine,
+      stdLat: res.stats.latResidualStdDeg,
+      stdLon: res.stats.lonResidualStdDeg
+    })
 
 
     return res;
@@ -280,6 +291,27 @@ export async function startLiveCorrectedFakeGps() {
     console.log("Calcul Helmert échoué : " + (err.message || err));
     return;
   }
+
+  // --- Logger ---
+    try {
+      await logCalibration("Helmert_params", {
+        tx: params.tx,
+        ty: params.ty,
+        k: params.k,
+        thetaRad: params.thetaRad,
+        deltaLon: params.deltaLon
+      }, getSessionId());
+    } catch (e) {
+      console.warn("Logger calibration failed:", e);
+    }
+
+  logEvent("Helmert_param", {
+    tx: params.tx,
+    ty: params.ty,
+    k: params.k,
+    thetaRad: params.thetaRad,
+    deltaLon: params.deltaLon
+  })
 
   // coupe toute boucle existante
   if (fakeGpsIntervalId) clearInterval(fakeGpsIntervalId);

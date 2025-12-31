@@ -42,7 +42,8 @@ import ARView from './ARView.vue';
 import DebugConsole from './DebugConsole.vue';
 import { runCalibrationPoint } from '../lib/calib.js';
 import { COORDS } from '../constants/CoordsPts.js';
-import { exportCalibrationHistory } from "../lib/logger.js";
+import { getSessionId } from "../lib/sessionId.js";
+import { logEvent } from "../lib/CRUD.js";
 
 export default {
   name: 'Calibration',
@@ -52,7 +53,7 @@ export default {
     return { 
       step: 1,
       isMeasuring: false,
-      sessionId: `session-${Date.now()}`
+      sessionId: getSessionId()
      }
   },
 
@@ -83,6 +84,8 @@ export default {
           sessionId: this.sessionId
         });
 
+        logEvent("button_click", { id: "first_point_calib" });
+
         ar?.showArrowPf2();   // affiche PF2
 
         this.step = 2;
@@ -97,17 +100,15 @@ export default {
           sessionId: this.sessionId
         });
 
+        logEvent("button_click", { id: "second_point_calib" });
+
         this.step = 3;
         return;
       }
 
       if (this.step === 3) {
-        try {
-          await exportCalibrationHistory({ sessionId: this.sessionId });
-        } catch (e) {
-          console.warn("Export calibration failed:", e);
-          alert("Export JSON impossible sur ce navigateur.");
-        }
+        
+        logEvent("button_click", { id: "calib_applied" });
 
         this.$router.push('/');
       }
