@@ -155,10 +155,10 @@ export async function AREngine(input) {
     return;
   }
 
-  locar.add(mesh, input.lon, input.lat);
+  locar.add(mesh, input.lon, input.lat, -EYE_HEIGHT);
 
   // Rapprocher le modèle du sol (déduire la hauteur des yeux)
-  mesh.position.y -= EYE_HEIGHT;
+  //mesh.position.y -= EYE_HEIGHT;
 
   elementsActuels = [mesh];
 
