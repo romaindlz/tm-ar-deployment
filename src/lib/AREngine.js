@@ -179,6 +179,15 @@ export function initAREngine(canvas) {
   locar = new LocAR.LocationBased(scene, camera);
   window.locar = locar;
 
+  // --- LERP camera smoothing state ---
+  const cameraTarget = new THREE.Vector3();
+  const cameraSmoothed = new THREE.Vector3();
+  let hasCameraTarget = false;
+
+  // réglages LERP
+  const LERP_ALPHA = 0.01;
+  const SNAP_DIST  = 8;
+
   // Camera
   const cam = new LocAR.Webcam({ video: { facingMode: 'environment' }, audio: false },null);
   cam.on('webcamstarted', ev => {scene.background = ev.texture;console.log('Webcam started');});
@@ -206,7 +215,27 @@ export function initAREngine(canvas) {
 
   let firstFixResolved = false
   const firstFixPromise = new Promise(resolve => {
+    /*locar.on('gpsupdate', ev => {
+      if (!firstFixResolved) {
+        firstFixResolved = true
+        console.log('Premier fix GPS obtenu')
+        resolve(ev)
+      }
+    })*/
     locar.on('gpsupdate', ev => {
+      // --- LERP: LocAR vient de mettre camera.position au GPS brut ---
+      if (!hasCameraTarget) {
+        cameraTarget.copy(camera.position);
+        cameraSmoothed.copy(camera.position);
+        hasCameraTarget = true;
+      } else {
+        // 1) On enregistre la nouvelle cible (brute)
+        cameraTarget.copy(camera.position);
+        // 2) On restaure la position lissée pour éviter le saut instantané
+        camera.position.copy(cameraSmoothed);
+      }
+
+      // --- Premier fix ---
       if (!firstFixResolved) {
         firstFixResolved = true
         console.log('Premier fix GPS obtenu')
@@ -238,6 +267,10 @@ export function initAREngine(canvas) {
     if (!animating) return
     requestAnimationFrame(animate)
     deviceOrientationControls.update?.()
+    if (hasCameraTarget) {
+      smoothLerpPosition(camera.position, cameraTarget, LERP_ALPHA, SNAP_DIST);
+      cameraSmoothed.copy(camera.position);
+    }
     renderer.render(scene, camera)
   }
 
@@ -265,4 +298,22 @@ export function initAREngine(canvas) {
       AREngine(contenuAR.nav_pf2)
     }
   }
+}
+
+export function smoothLerpPosition(
+  current,
+  target,
+  alpha = 0.08,
+  snapDistance = 10
+) {
+  if (!current || !target) return;
+
+  const dist = current.distanceTo(target);
+
+  if (dist > snapDistance) {
+    current.copy(target);
+    return;
+  }
+
+  current.lerp(target, alpha);
 }

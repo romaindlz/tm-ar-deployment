@@ -1,4 +1,4 @@
-/*
+
 //Uvrier
 export const COORDS = {
   latPF1: 46.24682,
@@ -11,10 +11,8 @@ export const COORDS = {
   lonObj: 7.41198,
   modelURL: '/models/simple_cube0.glb'
 };
-*/
 
-import { getSessionId } from "../lib/sessionId";
-
+/*
 //IGGroup
 export const COORDS = {
   latPF1: 46.22541,
@@ -27,3 +25,4 @@ export const COORDS = {
   lonObj: 7.37054,
   modelURL: '/models/simple_cube0.glb'
 };
+*/
