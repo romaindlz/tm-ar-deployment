@@ -106,7 +106,7 @@ async function createMesh(desc) {
 	  // Pointe (cône)
       const headGeom = new THREE.ConeGeometry(headRadius, headHeight, 16);
       const head = new THREE.Mesh(headGeom, mat);
-      head.position.y -= EYE_HEIGHT - (headHeight/ 2);
+      head.position.y = (headHeight/ 2);
 
       head.rotation.z = Math.PI;
 
@@ -117,7 +117,7 @@ async function createMesh(desc) {
       const shaftGeom = new THREE.CylinderGeometry(shaftRadius, shaftRadius, shaftHeight, 16);
       const shaft = new THREE.Mesh(shaftGeom, mat);
 
-      shaft.position.y -= EYE_HEIGHT - headHeight - (shaftHeight/ 2);
+      shaft.position.y = headHeight + (shaftHeight/ 2);
 	  
 	    group.add(shaft);
       group.add(head);
