@@ -12,7 +12,7 @@ export async function getPosition() {
     enableHighAccuracy: true,
     maximumAge: 0,
   });
-  console.log(pos)
+  /*console.log(pos)*/
 
   return {
       ok: true,

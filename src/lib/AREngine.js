@@ -140,7 +140,7 @@ export async function AREngine(input) {
     return;
   }
 
-  console.log('AREngine reçu =', input);
+  /*console.log('AREngine reçu =', input);*/
 
   hideAllARElements();
 
@@ -162,13 +162,13 @@ export async function AREngine(input) {
 
   elementsActuels = [mesh];
 
-  console.log('elementsActuels après AREngine =', elementsActuels);
+  /*console.log('elementsActuels après AREngine =', elementsActuels);*/
 }
 
 
 // Fonction d'initialisation de l'AR
 export function initAREngine(canvas) {
-  console.log('INIT AR SCRIPT');
+  /*console.log('INIT AR SCRIPT');*/
 
   // Constantes AR
   renderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true});
@@ -190,13 +190,13 @@ export function initAREngine(canvas) {
 
   // Camera
   const cam = new LocAR.Webcam({ video: { facingMode: 'environment' }, audio: false },null);
-  cam.on('webcamstarted', ev => {scene.background = ev.texture;console.log('Webcam started');});
+  cam.on('webcamstarted', ev => {scene.background = ev.texture;/*console.log('Webcam started')*/;});
   cam.on('webcamerror', err =>alert(`Webcam error: code ${err.code} message ${err.message}`));
 
   deviceOrientationControls = new LocAR.DeviceOrientationControls(camera);
   deviceOrientationControls.on('deviceorientationgranted', ev => {
     ev.target.connect();
-    console.log('Device motion granted');
+    /*console.log('Device motion granted')*/;
   });
 
   deviceOrientationControls.on('deviceorientationerror', err =>
@@ -238,7 +238,7 @@ export function initAREngine(canvas) {
       // --- Premier fix ---
       if (!firstFixResolved) {
         firstFixResolved = true
-        console.log('Premier fix GPS obtenu')
+        /*console.log('Premier fix GPS obtenu')*/
         resolve(ev)
       }
     })
@@ -259,7 +259,7 @@ export function initAREngine(canvas) {
 
   resizeToCanvas();
 
-  console.log('Calling locar.startGps()');
+  /*console.log('Calling locar.startGps()');*/
   locar.startGps();
 
   let animating = true

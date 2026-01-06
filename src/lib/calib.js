@@ -90,17 +90,18 @@ async function calibrateGps(lonKnown, latKnown, { onStart, onEnd } = {}) {
     // Échantillonnage en boucle avec getPosition()
     while ((Date.now() - start) < minDurationMs || samples.length < minSamples) {
       try {
-        console.log(Date.now() - start)
+        /*console.log(Date.now() - start)*/
         const res = await getPosition();
 
         const lat = res?.coords?.latitude;
         const lon = res?.coords?.longitude;
         const h = res?.coords?.altitude;
-        console.log('getPosition result:', lat, lon);
+        /*console.log('getPosition result:', lat, lon);*/
 
         if (res?.ok && lat != null && lon != null && h != null) {
           samples.push({ lat: lat, lon: lon, h: h });
-          console.log(`lat: ${lat}, lon: ${lon}, h: ${h}`);
+          console.log('Mesures faites : ', samples.length);
+          /*console.log(`lat: ${lat}, lon: ${lon}, h: ${h}`);*/
         }
       } catch (e) {
         // on ignore cet échantillon
@@ -123,7 +124,8 @@ async function calibrateGps(lonKnown, latKnown, { onStart, onEnd } = {}) {
     const hMean = mean(altitudesInliers);
     const hStd  = std(altitudesInliers);
 
-    console.log(`h mean (inliers): ${hMean} m, h std: ${hStd} m`);
+    console.log(`h mean (inliers): ${hMean} m`);
+    console.log(`h std: ${hStd} m`);
 
     // Correction = connu - mesuré
     const dLatDeg = latKnown - latMean;
@@ -135,7 +137,8 @@ async function calibrateGps(lonKnown, latKnown, { onStart, onEnd } = {}) {
     const latStdDeg = std(latResiduals);
     const lonStdDeg = std(lonResiduals);
 
-    console.log(`lat std: ${latStdDeg}, lon std: ${lonStdDeg}`);
+    console.log(`lat std: ${latStdDeg}`);
+    console.log(`lon std: ${lonStdDeg}`);
 
     // distance Haversine entre moyen mesuré et connu
     const dHaversine = haversineDistance(latKnown, lonKnown, latMean, lonMean)

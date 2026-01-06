@@ -88,12 +88,14 @@ export default {
     },
     async TheEnd(){
       await endSession();
+      /*
       try {
           await exportAndResetSession(this.sessionId);
         } catch (e) {
           console.warn("Export calibration failed:", e);
           alert("Export JSON impossible sur ce navigateur.");
         }
+          */
     },
     closeSidePanel() {
       this.isSidePanelOpen = false
