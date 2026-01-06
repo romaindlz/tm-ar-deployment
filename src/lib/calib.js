@@ -229,6 +229,7 @@ export async function runCalibrationPoint(pointName, lonKnown, latKnown, options
       markCalibrationDone();
     }
 
+    /*
     // --- Logger ---
     try {
       await logCalibration("Calibration_Point", {
@@ -242,13 +243,15 @@ export async function runCalibrationPoint(pointName, lonKnown, latKnown, options
     } catch (e) {
       console.warn("Logger calibration failed:", e);
     }
+      */
 
     logEvent("calibration_done", {
-      pointName: pointName,
-      samplesUsed: res.stats.samplesUsed,
-      meanDelta: res.dHaversine,
-      stdLat: res.stats.latResidualStdDeg,
-      stdLon: res.stats.lonResidualStdDeg
+      point: pointName,
+      lonPF: lonKnown,
+      latPF: latKnown,
+      avgDeltaDeg: res.avgDeltaDeg,
+      dHaversine: res.dHaversine,
+      stats: res.stats
     })
 
 
@@ -292,6 +295,7 @@ export async function startLiveCorrectedFakeGps() {
     return;
   }
 
+  /*
   // --- Logger ---
     try {
       await logCalibration("Helmert_params", {
@@ -304,6 +308,7 @@ export async function startLiveCorrectedFakeGps() {
     } catch (e) {
       console.warn("Logger calibration failed:", e);
     }
+      */
 
   logEvent("Helmert_param", {
     tx: params.tx,
