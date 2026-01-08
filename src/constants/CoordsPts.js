@@ -1,4 +1,4 @@
-/*
+
 //Ronquoz
 export const COORDS = {
   latPF1: 46.22610,
@@ -16,9 +16,9 @@ export const COORDS = {
   mobURL: '/models/MobilierUrbain.glb',
   mobColor: 0x00557F, // dark blue
 };
-*/
 
 
+/*
 //Uvrier
 export const COORDS = {
   latPF1: 46.24682,
@@ -38,7 +38,6 @@ export const COORDS = {
 };
 
 
-/*
 //IGGroup
 export const COORDS = {
   latPF1: 46.22541,
