@@ -55,7 +55,10 @@ export default {
 
     if (ar) {
       console.log("Affichage automatique du modèle sur Home")
-      ar.showModel()   // Affiche le modèle 3D gLB
+      //ar.showModel()   // Affiche le modèle 3D gLB
+      ar.showBat();
+      ar.showTele();
+      ar.showMob();
     }
 
     const popupFlag = sessionStorage.getItem('welcomeShown')
@@ -82,8 +85,9 @@ export default {
     },
     feedback() {
       window.open(
-    'https://docs.google.com/forms/d/e/1FAIpQLScTY4oCuQEOsQuCAlPTz_XexjU8eV87tU8lbJPWVpyNH1u_RQ/viewform?usp=dialog',
+    'https://docs.google.com/forms/d/e/1FAIpQLScTY4oCuQEOsQuCAlPTz_XexjU8eV87tU8lbJPWVpyNH1u_RQ/viewform?usp=sharing&ouid=100533160203618964602',
     '_blank'
+    
   )
     },
     async TheEnd(){

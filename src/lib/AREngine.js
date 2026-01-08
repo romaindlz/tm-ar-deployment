@@ -2,12 +2,28 @@ import * as THREE from 'three';
 import * as LocAR from 'locar';
 import { COORDS } from '../constants/CoordsPts.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { color } from 'three/tsl';
 
 // "catalogue"
 const contenuAR = {
-  model : {
-    type: 'model',
-    url: COORDS.modelURL,
+  bat : {
+    type: 'bat',
+    url: COORDS.batURL,
+    color: COORDS.batColor,
+    lon: COORDS.lonObj,
+    lat: COORDS.latObj
+  },
+  tele : {
+    type: 'tele',
+    url: COORDS.teleURL,
+    color: COORDS.teleColor,
+    lon: COORDS.lonObj,
+    lat: COORDS.latObj
+  },
+  mob : {
+    type: 'mob',
+    url: COORDS.mobURL,
+    color: COORDS.mobColor,
     lon: COORDS.lonObj,
     lat: COORDS.latObj
   },
@@ -46,7 +62,9 @@ function hideAllARElements() {
 async function createMesh(desc) {
   switch (desc.type) {
 
-    case 'model': {
+    case 'bat':
+    case 'tele':
+    case 'mob': {
       if (!desc.url) {
         console.warn('desc.url manquant pour un modèle glTF', desc);
         return null;
@@ -62,7 +80,7 @@ async function createMesh(desc) {
               if (!obj.isMesh) return;
 
               obj.material = new THREE.MeshBasicMaterial({
-                color: 0x00557F,
+                color: desc.color || 0x00557F,
                 transparent: true,
                 opacity: 0.6
               });
@@ -285,9 +303,17 @@ export function initAREngine(canvas) {
         console.warn('Erreur lors du stopGps:', e)
       }
     },
-    async showModel() {
+    async showBat() {
       await firstFixPromise
-      AREngine(contenuAR.model)
+      AREngine(contenuAR.bat)
+    },
+    async showTele() {
+      await firstFixPromise
+      AREngine(contenuAR.tele)
+    },
+    async showMob() {
+      await firstFixPromise
+      AREngine(contenuAR.mob)
     },
     async showArrowPf1() {
       await firstFixPromise

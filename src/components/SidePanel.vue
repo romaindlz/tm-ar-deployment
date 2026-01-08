@@ -1,20 +1,23 @@
 <template>
-  <!-- Overlay sombre cliquable -->
   <div
     v-if="open"
     class="sidepanel-overlay"
     @click.self="$emit('close')"
   >
-    <!-- Le panneau lui-même -->
     <div class="sidepanel">
       <div class="sidepanel-header">
-        <h2>Menu</h2>
-        <button class="close-btn" @click="$emit('close')">×</button>
+        <h2>Informations</h2>
+        <button class="close-btn" @click="$emit('close')">x</button>
       </div>
 
       <div class="sidepanel-content">
-        <!-- Tu peux mettre ici ce que tu veux : options, infos, etc. -->
-        <p>Contenu du panneau latéral.</p>
+        <p><b>Parcelle :</b> 1048</p><br/>
+        <p><b>Commune :</b> Sion</p><br/>
+        <p><b>Bâtiment :</b> Swiss Innovation Parc</p><br/>
+        <p><b>Télécabine :</b> Liaison câblée Sion - Les Mayens de l'Ours</p><br/>
+        <p><b>Parc :</b> Mobilier urbain du Parc des câbles</p><br/>
+        <p><b>Projet :</b></p>
+        <p>Le secteur de <b>Ronquoz 21</b>, situé entre les voies CFF, le Rhône et l'autoroute, est un quartier à vocation essentiellement industrielle. Ce projet repose sur la complémentarité entre la densité urbaine et les grands espaces libres. Il vise à créer un quartier durable qui intègre des objectifs environnementaux, énergétiques, sociaux et économiques, tout en valorisant les ressources, le patrimoine existant et la cohésion sociale. La mobilité sera repensée, avec une priorité donnée aux transports publics et à la mobilité douce, notamment grâce au développement de la liaison câblée plaine-montagne. Enfin, le développement du quartier se fera au fur et à mesure des opportunités qui se présenteront.</p>
       </div>
     </div>
   </div>
@@ -85,7 +88,7 @@ export default {
   color: #000;
 }
 
-/* petite animation d’apparition */
+/* animation d’apparition */
 @keyframes slideIn {
   from {
     transform: translateX(-100%);
