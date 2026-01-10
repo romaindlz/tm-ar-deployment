@@ -1,8 +1,8 @@
 
 //Ronquoz
 export const COORDS = {
-  latPF1: 46.22610,
-  lonPF1: 7.35951,
+  latPF1: 46.22628,
+  lonPF1: 7.35953,
 
   latPF2: 46.22513,
   lonPF2: 7.35931,
