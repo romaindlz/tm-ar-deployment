@@ -6,7 +6,7 @@ let b = a-a*f
 let e = (Math.sqrt(a*a-b*b))/a
 
 
-// ───────────── Transformation de Helmert 2D ─────────────
+// ───────────── Transformation de similitude 2D ─────────────
 // "P:\HEIG-VD\3eme_semestre\Géodésie\02_Systemes_de_projection\libGeod_20211118.py"
 function ell2cart(lon_deg,lat_deg,h) {
 
@@ -50,10 +50,10 @@ function cart2ell(x,y,z) {
 
 
 /**
- * Calcule les paramètres d'une transformation de Helmert 2D
+ * Calcule les paramètres d'une transformation de similitude 2D
  * à partir de deux points de contrôle (source -> target).
  */
-export function getHelmert2DParam(src1, src2, tgt1, tgt2) {
+export function getTransform2dParams(src1, src2, tgt1, tgt2) {
 
     const S1 = ell2cart(src1.lon, src1.lat, src1.h);
     const S2 = ell2cart(src2.lon, src2.lat, src2.h);
@@ -102,8 +102,8 @@ export function getHelmert2DParam(src1, src2, tgt1, tgt2) {
     };
 }
 
-// Fonction Helmert
-function helmert2D(tx, ty, x_source,y_source,k,theta) {
+// Fonction transformation similitude
+function transfo2D(tx, ty, x_source,y_source,k,theta) {
 
   const a = k * Math.cos(theta);
   const b = k * Math.sin(theta);
@@ -116,16 +116,13 @@ function helmert2D(tx, ty, x_source,y_source,k,theta) {
 
 
 // Applicquer la transformation
-export function applyHelmert(lat, lon, h, params) {
+export function applyTransform(lat, lon, h, params) {
   
   const {x,y,z} = ell2cart(lon, lat, h);
   const { tx,ty,k,thetaRad } = params
-  const {x_transfo, y_transfo} = helmert2D(tx, ty, x, y, k, thetaRad);
+  const {x_transfo, y_transfo} = transfo2D(tx, ty, x, y, k, thetaRad);
   const {lat_transfo, lon_transfo, h_transfo} = cart2ell(x_transfo, y_transfo,z)
 
   return { lat_transfo, lon_transfo, h_transfo }
 
 }
-
-
-

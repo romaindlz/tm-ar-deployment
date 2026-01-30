@@ -1,6 +1,6 @@
 import { logCalibration } from "./logger.js";
 import { getPosition } from './getPosition.js';
-import { getHelmert2DParam, applyHelmert }  from './transformation.js';
+import { getTransform2dParams, applyTransform }  from './transformation.js';
 import { COORDS } from '../constants/CoordsPts.js'
 import { logEvent } from "./CRUD.js";
 import { getSessionId } from "./sessionId.js";
@@ -290,18 +290,18 @@ export async function startLiveCorrectedFakeGps() {
   let target2 = { lon: lonPF2,        lat: latPF2,        h: pf2_source_h };
 
   try {
-    params = getHelmert2DParam(source1, source2, target1, target2);
-    console.log("Paramètres Helmert calculés avec succès.");
+    params = getTransform2dParams(source1, source2, target1, target2);
+    console.log("Paramètres calculés avec succès.");
   } catch (err) {
-    alert("Erreur lors du calcul Helmert : " + (err.message || err));
-    console.log("Calcul Helmert échoué : " + (err.message || err));
+    alert("Erreur lors du calcul : " + (err.message || err));
+    console.log("Calcul échoué : " + (err.message || err));
     return;
   }
 
   /*
   // --- Logger ---
     try {
-      await logCalibration("Helmert_params", {
+      await logCalibration("Transfo_params", {
         tx: params.tx,
         ty: params.ty,
         k: params.k,
@@ -313,7 +313,7 @@ export async function startLiveCorrectedFakeGps() {
     }
       */
 
-  logEvent("Helmert_param", {
+  logEvent("Transfo_params", {
     tx: params.tx,
     ty: params.ty,
     k: params.k,
@@ -348,7 +348,7 @@ export async function startLiveCorrectedFakeGps() {
   console.log(params)
   // première injection (instantanée) pour éviter un "trou" visuel
   try {
-    const first = applyHelmert(res.coords.latitude, res.coords.longitude, res.coords.altitude, params);
+    const first = applyTransform(res.coords.latitude, res.coords.longitude, res.coords.altitude, params);
     console.log(first)
     window?.locar?.fakeGps?.(first.lon_transfo, first.lat_transfo);
     console.log(`Fake GPS LIVE démarrée (lon: ${first.lon_transfo.toFixed(6)}, lat: ${first.lat_transfo.toFixed(6)})`);
@@ -364,7 +364,7 @@ export async function startLiveCorrectedFakeGps() {
       const r = await getPosition();
       if (!r?.ok || !r.coords) return;
 
-      const corrected = applyHelmert(r.coords.latitude, r.coords.longitude, r.coords.altitude, params);
+      const corrected = applyTransform(r.coords.latitude, r.coords.longitude, r.coords.altitude, params);
       window?.locar?.fakeGps?.(corrected.lon_transfo, corrected.lat_transfo);
 
       console.log(`Fake GPS LIVE → lon: ${corrected.lon_transfo.toFixed(6)}, lat: ${corrected.lat_transfo.toFixed(6)}`);
